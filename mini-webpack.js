@@ -79,6 +79,7 @@ class Compilation {
         }
     }
 
+    // loader处理源码
     loader(absoluteFilePath) {
         let sourceCode = fs.readFileSync(absoluteFilePath, 'utf8');
         const rules = this.options.module?.rules ?? [];
@@ -92,6 +93,7 @@ class Compilation {
         return sourceCode;
     }
 
+    // 模块对象编译
     buildModule(entryName, absoluteFilePath) {
         const module = {
             id: path.posix.relative(baseDir, absoluteFilePath),
@@ -117,6 +119,7 @@ class Compilation {
         return module;
     }
 
+    // 生成代码块
     createChunk(fileName, module) {
         return {
             name: fileName,
@@ -145,13 +148,16 @@ class Compilation {
         } else {
             entry = this.options.entry;
         }
+        // 遍历入口文件
         for (let entryName in entry) {
             const module = this.buildModule(entryName, entry[entryName]);
             this.modules.push(module);
             const chunk = this.createChunk(entryName, module);
             this.chunks.push(chunk);
         }
+        // 生成并将产物写入文件系统
         this.generateAsset();
+        // 编译结束
         callback(null, {
             assets: this.assets,
             chunks: this.chunks,
@@ -196,6 +202,7 @@ class Compiler {
 
 const webpack = (webpackOptions) => {
     const compiler = new Compiler(webpackOptions);
+    // 加载plugin
     webpackOptions.plugins.forEach(plugin => {
         plugin.apply(compiler);
     })
