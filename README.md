@@ -201,7 +201,7 @@ const callback = (err, stat) => {
 compiler.run(callback);
 ```
 #### 整体工作流程
-[pic]
+![image](./pics/workflow.jpg)
 #### 详解
 我们将通过创建mini-webpack来详细介绍上述工作流程。
 ##### 1. 项目初始化
@@ -447,7 +447,8 @@ class Compiler {
 3. assets：产物，存储产物名称及其对应的内容，用于追踪产物 
    1. 类型为：{[filePath: string]: string;}[]
 4. fileDependencies：本次编译涉及到的所有文件路径（绝对路径），便于实现watch模式，即对这些文件进行监听，当文件发生变更时，重新编译 
-   1. fs.watch(filePath)  
+   1. fs.watch(filePath)
+
 下面我们先创建模块编译架构：
 ```diff
 class Compilation {
@@ -782,7 +783,7 @@ class Compilation {
   ```ts
 // asset数据结构
 {
-  [filePath: string]: string; // 文件名：文件内容
+    [filePath: string]: string; // 文件名：文件内容
   }
 ```
 ```diff
@@ -806,7 +807,7 @@ class Compilation {
 +                modules[moduleId](module);
 +                return module.exports;
 +            };
-+						 // 入口文件源码
++			 // 入口文件源码
 +            ${chunk.module.sourceCode}
 +        })() // 自执行
 +    `;
