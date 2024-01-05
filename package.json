@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "https://github.com/cjzzzz/mini-webpack",
   "license": "ISC",
   "devDependencies": {
     "@babel/generator": "^7.23.6",
