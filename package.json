@@ -4,7 +4,7 @@
   "description": "mini-webpack",
   "main": "/dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node ./debugger.js"
   },
   "author": "https://github.com/cjzzzz",
   "license": "ISC",
