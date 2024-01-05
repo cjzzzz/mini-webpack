@@ -280,33 +280,35 @@ module.exports = {
 
 ##### 3.compiler初始化
 将配置参数传递到compiler中，以便做后续的编译工作，同时对外提供hook，方便外部干预编译过程。上面说过，webpack使用Tapable来实现事件的创建、注册和触发，hook就是事件的创建，由使用它的plugin来注册，再由compiler在适当的时机去触发事件。
+
 所以，需要先安装依赖`tapable`，再对mini-webpack进行以下改造：
 ```diff
 // mini-webpack.js
 + const { SyncHook } = require('tapable');
 
 class Compiler {
-constructor(webpackOptions) {
+    constructor(webpackOptions) {
 +        this.options = webpackOptions;
 +        this.hooks = {
 +            run: new SyncHook(),
 +            done: new SyncHook(),
         }
-  }
+    }
 
-  run(callback) {
+    run(callback) {
 
-  }
-  }
+    }
+}
 
 const webpack = (webpackOptions) => {
 +    const compiler = new Compiler(webpackOptions);
-     return compiler;
-     }
+    return compiler;
+}
 
 module.exports = {
-webpack
+    webpack
 }
+
 ```
 
 ##### 4. 加载plugin
@@ -337,6 +339,7 @@ module.exports = {
 
 然后将plugin配置到webpack.config.js中：
 ```diff
+// mini-webpack.js
 const path = require('path');
 + const {StartPlugin, EndPlugin} = require("./myPlugins");
 
@@ -469,7 +472,7 @@ class Compilation {
     }
 }
 ```
-  ####### 6.2.1 创建module对象
+  ###### 6.2.1 创建module对象
 ```diff
 + const path = require("path");
 class Compilation {
@@ -488,7 +491,7 @@ class Compilation {
     }
 }
 ```
-  ####### 6.2.2 加载loader
+  ###### 6.2.2 加载loader
   loader实际上是个函数，它负责将非js代码转换成js代码，以便构建AST语法树。下面我们先创建一个loader，并配置到webpack.config.js中，以便加载：
 ```js
 // myLoader.js
@@ -517,6 +520,7 @@ module.exports = {
 ```
 使用loader对源码进行转换：
 ```diff
+// mini-webpack.js
 + const fs = require("fs");
 
 + const baseDir = __dirname;
@@ -552,8 +556,8 @@ class Compilation {
     }
 }
 ```
-  ####### 6.2.3 解析源码
-  对源码的解析，我们通常会先构建AST语法树（https://astexplorer.net/），使用到的工具有：
+  ###### 6.2.3 解析源码
+  对源码的解析，我们通常会先构建AST语法树（<https://astexplorer.net/>），使用到的工具有：
   1. @babel/parser：解析成语法树
   2. @babel/traverse：遍历语法树
   3. @babel/types：编辑语法树节点（可以不要）
@@ -629,9 +633,10 @@ class Compilation {
     }
 }
 ```
-  ####### 6.2.4 解析模块依赖
+  ###### 6.2.4 解析模块依赖
   通过上述过程，已经完成了module对象的编译，但还需要继续对module对象所依赖的模块继续编译。
 ```diff
+// mini-webpack.js
 const { SyncHook } = require('tapable');
 const path = require("path");
 const fs = require("fs");
@@ -670,16 +675,16 @@ class Compilation {
         const { dependencies, sourceCode } = this.codeParser(codeAfterLoader, absoluteFilePath);
         module.dependencies.push(...dependencies);
         module.sourceCode = sourceCode;
- +       module.dependencies.forEach(depPath => {
- +           const depId = path.posix.relative(baseDir, depPath);
- +           const existModule = this.modules.find(m => m.id === depId);
- +           if (existModule) {
- +               existModule.names.push(entryName);
- +           } else {
- +               const depModule = this.buildModule(entryName, depPath);
- +               this.modules.push(depModule);
- +           }
- +       })
++       module.dependencies.forEach(depPath => {
++           const depId = path.posix.relative(baseDir, depPath);
++           const existModule = this.modules.find(m => m.id === depId);
++           if (existModule) {
++               existModule.names.push(entryName);
++           } else {
++               const depModule = this.buildModule(entryName, depPath);
++               this.modules.push(depModule);
++           }
++       })
         return module;
     }
 
@@ -729,7 +734,7 @@ class Compilation {
   }
 ]
 ```
-  ####### 6.2.5 代码块组装
+  ###### 6.2.5 代码块组装
   上述过程已经将相关源码解析成module对象，接下来将根据module对象的names字段，将相同入口的module对象组装成一个chunk便于后续组装产物。chunk的数据结构如下：
 ```ts
 // chunk结构
@@ -772,7 +777,7 @@ class Compilation {
     }
 }
 ```
-  ####### 6.2.6 生成产物
+  ###### 6.2.6 生成产物
   将上述产生的代码块写入到文件系统中。存储产物(asset)的数据结构为：
   ```ts
 // asset数据结构
@@ -853,7 +858,7 @@ class Compilation {
 
 [pic]
 
-####### 6.2.7 编译回调
+###### 6.2.7 编译回调
 上面的过程中，还有两个回调未处理：
 1. `compile.run(callback)`：返回编译结果 
 2. `compilation.build(callback)`：编译结束
