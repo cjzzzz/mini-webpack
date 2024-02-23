@@ -227,10 +227,10 @@ post --> inline --> normal --> pre
 
 <------Normal
 
-![img.png](loaderQueue.png)
+![img.png](./pics/loaderQueue.png)
 
 #### 3.3.1 pitch 有返回值
 > `pitch`阶段有返回值时，则会跳过后续的`pitch`阶段，回到上一个`loader`的`normal`阶段
 
-![img.png](loaderPitchReturnQueue.png)
+![img.png](./pics/loaderPitchReturnQueue.png)
 
